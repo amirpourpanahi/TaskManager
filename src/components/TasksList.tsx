@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeTask, sortTask } from '../store';
 import AddTask from './AddTask';
 import {Button} from 'react-bootstrap';
+import { Task } from '../types/Task';
 
-
-function TaskList(props) {
+function TaskList(props: any) {
 
   const dispatch = useDispatch();
   const [selectedRow, setSelectedRow] = useState();
-  const [selectedTaskId, setSelectedTaskId] = useState();
+  const [selectedTaskId, setSelectedTaskId] = useState(-1);
   const [displayModal, setDisplayModal] = useState(false);
   const [newId, setNewId] = useState(0);
   const [editTask, setEditTask] = useState();
   const [field, setField] = useState("");
   
-  const handleSelectRow = (index) => {
+  const handleSelectRow = (index: any) => {
     setSelectedRow(index);
   };
 
@@ -25,54 +25,74 @@ function TaskList(props) {
 
   const closeModal = () => {
     setDisplayModal(!displayModal);
-    setNewId(null);
-    setEditTask(null);
+    setNewId(0);
+    setEditTask(undefined);
   };
 
-  const taskList = useSelector((state)=>{
+  const taskList: any = useSelector((state: any)=>{
     return state.tasks;
   });
 
   const handleAdd = () => {
-    setNewId(taskList.data.length ? Math.max.apply(Math, taskList.data.map(function(task) { return task.id; }))  + 1 : 1);
+    setNewId(taskList.data.length ? Math.max.apply(Math, taskList.data.map(function(task: any) { return task.id; }))  + 1 : 1);
     openModal();
   };
 
-  const handleEdit = () => {
-    var data = taskList.data.find(task => {
-      return task.id === selectedTaskId
+  const handleEdit:any = (taskId: number) => {
+    const id = taskId >  0 ? taskId : selectedTaskId;
+    var data = taskList.data.find((task:Task) => {
+      return task.id === id
     })
     setEditTask(data);
     openModal();
   };
 
-  const handleDelete = () => {
-    dispatch(removeTask(selectedTaskId));
-    setSelectedRow(null);
-    setSelectedTaskId(null);
+  const handleDelete: any = (taskId: number) => {
+    const id = taskId > 0 ? taskId : selectedTaskId;
+    dispatch(removeTask(id));
+    setSelectedRow(undefined);
+    setSelectedTaskId(-1);
   };
 
-  const handleSort = (e) => {
+  const handleSort = (e: any) => {
     setField(e.target.value);
     dispatch(sortTask({ field: e.target.value }));
   };
 
   function renderedTasks() {
-    return taskList.data.map((task, index) => {
+    return taskList.data.map((task: Task, index: number) => {
       return (
         <tr 
           key= {task.id} 
           className = { (index === selectedRow ? "border border-dark fw-bold " : "")  + (task.status === 'Completed' ? "table-success" : "table-danger")}
-          onClick = {() => {
+          onClick = {(e: any) => {
             handleSelectRow(index)
-            setSelectedTaskId(task.id)
+            if(e.target.name !== "btnDelete") {
+              setSelectedTaskId(task.id);
+            }
           }}
         >
-          {/* <td>{task.id}</td> */}
           <td>{task.title}</td>
           <td>{task.description}</td>
           <td>{task.status}</td>
           <td>{task.creationDate}</td>
+          <td>
+            <button
+              type="button"
+              className="btn btn-warning mx-1"
+              onClick={() => handleEdit(task.id)}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              name="btnDelete"
+              className="btn btn-danger"
+              onClick={() => handleDelete(task.id)}
+            >
+              Delete
+            </button>
+          </td>
         </tr>
       )
     })
@@ -84,7 +104,7 @@ function TaskList(props) {
       <div className="">
         <label>Sort by</label>
         <select className="m-2" value={field} onChange={handleSort}>
-          <option value="">Select an Option</option>
+          <option hidden value="">Select an Option</option>
           <option value="status">Status</option>
           <option value="created_at">Created date</option>
         </select>
@@ -93,7 +113,6 @@ function TaskList(props) {
       <table className="table">
         <thead>
           <tr className="border">
-          {/* <th scope="col">ID</th> */}
             <th scope="col">Title</th>
             <th scope="col">Description</th>
             <th scope="col">Status</th>
@@ -108,18 +127,6 @@ function TaskList(props) {
       <Button variant="primary" className="mr-2"
         onClick={handleAdd}>
         Add New Task
-      </Button>
-
-      <Button variant="primary" className="m-2"
-        disabled={selectedTaskId > 0 ? false : true}
-        onClick={handleEdit}>
-        Edit Task
-      </Button>
-
-      <Button variant="primary" className="mr-2"
-        disabled={selectedTaskId > 0 ? false : true}
-        onClick={handleDelete}>
-        Remove Task
       </Button>
 
       {displayModal && (

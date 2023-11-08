@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addTask, modifyTask } from '../store';
-import {Button, Modal, Form, Check} from 'react-bootstrap';
+import {Button, Modal, Form} from 'react-bootstrap';
 
-
-function AddTask(props) {
+function AddTask(props: any) {
   const displayModal = props.displayModal;
   const closeModal = props.closeModal;
   const newTaskId = props.newTaskId;
@@ -17,11 +16,7 @@ function AddTask(props) {
     status: editTask && editTask.status === 'Completed' ? true : false,
   });
 
-  useEffect(() => {
-    //console.log("editTask", editTask)
-  }, []);
-
-  const onChangeHandler = event => {
+  const onChangeHandler = (event: any) => {
     const newField = {name: event.target.name, value: event.target.value};
     setNewTask((prevState) => ({
       ...prevState,
@@ -30,7 +25,7 @@ function AddTask(props) {
  };
 
   const handleTaskAdd = () => {
-    const task = {
+    const task: any = {
       "id": newTaskId,
       "title": newTask.title, 
       "description": newTask.description,
@@ -42,7 +37,7 @@ function AddTask(props) {
   };
 
   const handleTaskEdit = () => {
-    const task = {
+    const task: any = {
       "id": editTask.id,
       "title": newTask.title, 
       "description": newTask.description,
@@ -53,7 +48,6 @@ function AddTask(props) {
     closeModal();
   };
 
-
   return (
     <Modal show={displayModal} onHide={closeModal}>
       <Modal.Header closeButton>
@@ -62,13 +56,16 @@ function AddTask(props) {
       <Modal.Body>
         <Form>
           <div className="form-group">
-            <label htmlFor="inputTitle">Title</label>
+            <label htmlFor="inputTitle">Title
+              <span className="text-danger">{newTask.title === "" ? " (Required)" : ""}</span>
+            </label>           
             <input 
               type="text" 
               id="inputTitle" 
               name= "title"
               placeholder="Enter title" 
               className="form-control" 
+              maxLength= {20}
               onChange={onChangeHandler} 
               value={newTask.title}
             />
@@ -81,34 +78,39 @@ function AddTask(props) {
               name= "description"
               placeholder="Enter description"
               className="form-control"  
+              maxLength= {50}
               onChange={onChangeHandler}
               value={newTask.description}
             />
           </div>
-          <Form.Check
-            className="m-2"
-            type="switch"
-            id="completed-switch"
-            label= {newTask.status ? "Completed" : "Pending"}
-            name="status"
-            disabled={newTaskId ? true : false}
-            checked={newTask.status}
-            onChange={()=>{
-              setNewTask((prevState) => ({
-                ...prevState,
-                status: !newTask.status,
-              }));
-            }}
-          />
+          {!newTaskId && 
+            <Form.Check
+              className="m-2"
+              type="switch"
+              id="completed-switch"
+              label= {newTask.status ? "Completed" : "Pending"}
+              name="status"
+              checked={newTask.status}
+              onChange={()=>{
+                setNewTask((prevState) => ({
+                  ...prevState,
+                  status: !newTask.status,
+                }));
+              }}
+            />
+          }
         </Form> 
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={closeModal}>
           Close
         </Button>
-        <Button variant="primary" onClick={()=>{
-          newTaskId  ? handleTaskAdd() : handleTaskEdit();
-        }}>
+        <Button variant="primary" 
+          disabled={newTask.title === "" ? true : false}
+          onClick={()=>{
+            newTaskId  ? handleTaskAdd() : handleTaskEdit();
+          }}
+        >
           Save
         </Button>
       </Modal.Footer>
