@@ -44,11 +44,32 @@ const tasksSlice = createSlice({
   }
 })
 
+const projectsSlice = createSlice({
+  name: 'project',
+  initialState: ["Project1", "Project2", "Project3"],
+  reducers: {
+    addProject(state:any, action: any) {
+      state.push(action.payload);
+    },
+    removeProject(state, action) {
+      const index = state.indexOf(action.payload);
+      state.splice(index, 1)
+    },
+    resetProject(state, action) {
+      return [];
+    },
+  }
+})
+
 const store = configureStore({
   reducer: {
     tasks: tasksSlice.reducer,
+    projects: projectsSlice.reducer,
   }
 });
 
+console.log(store.getState())
+
 export { store };
-export const { addTask, modifyTask, removeTask, sortTask } = tasksSlice.actions;
+export const { addTask, modifyTask, removeTask, resetTask, sortTask } = tasksSlice.actions;
+export const { addProject, removeProject, resetProject } = projectsSlice.actions;
